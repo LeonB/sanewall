@@ -18,6 +18,78 @@ on any system that bash and iptables are available including full GNU/Linux
 servers and embedded routers such as OpenWRT (http://www.openwrt.org/).
 
 
+Known Issues
+============
+This is a development release of Sanewall. Below is a list of issues you
+should consider before using it. Note that the list is probably not
+exhaustive.
+
+You should also read the "IPv6 Support" section of this README.
+
+If you do choose to use this version, please report any bugs to the
+mailing list or bug tracker.
+
+1. There are a variety of ICMPv6 packet types without helpers and
+   not described here yet which are needed for full handling of IPv6.
+
+   The ipv6error packet rules have not been thoroughly tested.
+
+   A full set of ICMPv6 recommendations that ought to be implemented are
+   here:
+     http://tools.ietf.org/html/rfc4890
+
+   The recommendations, and how to achieve them (and where there is
+   still work to do) are documented in the "RFC 4890 Recommendations"
+   section of sanewall-manual.pdf and the online documentation.
+
+2. There is no Linux kernel NAT support for IPv6, you will get errors
+   if you try to use it.
+
+   The masquerade command automatically defaults to ipv4 only.
+
+3. No way to successfully mark a whole interface or router as ipv4/ipv6 only
+
+   There hopefully aren't too many situations where one would want
+   to do this but support will be added in due course.
+
+4. Private / Unroutable IPv6 lists may be incomplete.
+
+5. IPv4/IPv6 detection in iptables() could probably be improved
+
+6. The following commands have not received any significant attention
+   so may not work as expected:
+	restart
+	condrestart
+	status
+	panic
+	save
+	explain
+	helpme/wizard
+
+7. Creating a rule which applies only to one ip type will lead to
+   empty chains. For example:
+      server ssh accept src "10.0.0.0/8"
+
+   will create two chains, one using iptables and the other using
+   ip6tables; only the iptables chain has any rules added to it. This
+   should not cause any problems, but can look odd when inspecting
+   the tables directly.
+
+8. Using "src" will confuse complex rules at present and "src not" can
+   confuse even simple rules.
+
+   To avoid errors, rather than:
+      server ping accept src "${ip_mix}"
+      server ssh accept src not "${ip_mix}"
+
+   Write instead:
+      ivp4 server ping accept src "${ip_v4}"
+      ivp6 server ping accept src "${ip_v6}"
+
+      ipv4 server ssh accept src not "${ip_v4}"
+      ipv6 server ssh accept src not "${ip_v6}"
+
+
 Goals
 =====
 The main goals of the Sanewall project are:
@@ -54,6 +126,14 @@ out but not in. To get something more complete you have three choices:
      Sanewall configuration by copying firehol.conf over sanewall.conf
      and renaming any FIREHOL_ variables to SANEWALL_ instead.
 
+     Rename the files (if you have them, they are optional):
+        RESERVED_IPS   ->   RESERVED_IPV4s
+        PRIVATE_IPS    ->   PRIVATE_IPV4
+        MULTICAST_IPS  ->   MULTICAST_IPV4
+
+     There are new (optional) files for IPv6 addresses:
+        RESERVED_IPV6, PRIVATE_IPV6 and MULTICAST_IPV6
+
      If you have any custom services in /etc/firehol/services then you
      will need to update those, too.
 
@@ -62,6 +142,7 @@ out but not in. To get something more complete you have three choices:
        lan-gateway.conf
        server-dmz.conf
        office.conf
+       ipv6.conf
 
   3. Have Sanewall try to generate a configuration tailored to the machine
      automatically by running:
@@ -84,6 +165,74 @@ installed from an official package this will be configured in the usual way.
 For a source installation, the binary can be linked directly into /etc/init.d
 on many systems. In addition, some example init scripts are available here:
   http://bugs.sanewall.org/wiki/Init_Scripts
+
+
+IPv6 support
+============
+Versions of Sanewall above 1.1.0 contain IPv6 support.
+
+Sanewall will attempt to load both iptables and ip6tables entries for
+all rules, except as follows:
+
+1. When invoked with -4 or -6 on the command line:
+
+     sanewall -4 ...
+       IPv4 only
+
+     sanewall -6 ...
+       IPv6 only
+
+2. Explicitly stated version in the configuration e.g.:
+
+   interface wlan0 internet
+      ipv4 masquerade
+      ipv6 server ssh allow
+
+   Will only enable masquerading on IPv4 and ssh access via IPv6.
+
+2. Implicit protocol or address in the configuration e.g.:
+
+   interface eth0 lan
+      server telnet accept src "192.168.0.0/24"
+      server ftp accept src "fe80::/64"
+      server ssh accept src "fe80::/64 192.168.0.0/24"
+
+   Will should do the "right thing" and allow mix and match of addresses.
+
+   Note that using "src" will confuse complex rules at present and "src not"
+   can confuse even simple rules. See the "Known Issues" for a work-round.
+
+3. ICMP and ICMPv6 are not identical. You will get warnings and/or errors
+   if you try to include rules for an ICMP packet type for ICMPv6 and
+   vice-versa e.g.:
+
+   interface eth0 lan
+      client timestamp accept
+
+   will issue a warning, but:
+
+   interface eth0 lan
+      ipv4 timestamp client accept
+
+   will not, the reason being that the ICMP packets timestamp-request and
+   timestamp-reply have no equivalent in ICMPv6.
+
+   New ipv6-only marked protocols (e.g. ipv6router, ipv6neigh) will not
+   warn in "both" mode, only in "ipv4" mode.
+
+4. Network neighbour solicitation/advertisement messages (IPv6 replacement
+   for ARP) should be enabled on each interface. In most contexts,
+   router solicitation/advertisement messages should also be enabled
+   to allow router auto-configuration.
+
+   See the documentation (sanewall-manual.pdf or man sanewall-services)
+   on ipv6neigh and ipv6router for details. See also the ipv6.conf example.
+
+5. Various ICMPv6 error messages need to be allowed for correct operation
+   of IPv6.
+
+   See the documentation (sanewall-manual.pdf or man sanewall-services)
+   on the ipv6error complex rule for details. See also the ipv6.conf example.
 
 
 Support and documentation

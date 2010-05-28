@@ -1,8 +1,18 @@
 2013/04/24:
 
-Release of version 1.0.0
-
 Development series 1.1.0 starts
+
+Adds IPv6 support
+
+Can be invoked as:
+  sanewall [whatever]     -- "Both" mode (default)
+  sanewall -4 [whatever]  -- IPv4 mode (should show original behaviour)
+  sanewall -6 [whatever]  -- IPv6 mode (ip6tables only)
+
+
+2013/04/24:
+
+Release of version 1.0.0
 
 No functional changes from 0.9.10.
 

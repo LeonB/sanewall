@@ -395,7 +395,7 @@ SERVICE gift
 		giFT modules.
 		-
 		To allow access to the user interface ports of giFT, use
-		the <xref linkend="service-giftui"/> Sanewall service.
+		the <xref linkend="service-giftui"/>.
 
 SERVICE giftui
 	NAME giFT Internet File Transfer User Interface
@@ -406,7 +406,7 @@ SERVICE giftui
 	NOTES
 		This service refers only to the user interface ports offered
 		by giFT. To allow gift accept P2P requests, use the
-		<xref linkend="service-gift"/> Sanewall service.
+		<xref linkend="service-gift"/>.
 
 SERVICE gkrellmd
 	NAME GKrellM Daemon
@@ -463,7 +463,7 @@ SERVICE hylafax
 	EXAMPLE
 		server hylafax accept
 	NOTES
-		This complex service allows incoming requests to server port
+		This service allows incoming requests to server port
 		tcp/4559 and outgoing from server port tcp/4558.
 		-
 		The correct operation of this service has not been verified.
@@ -559,7 +559,7 @@ SERVICE jabberd
 		connections.
 		-
 		Use this service for a jabberd server. In all other cases,
-		use the <xref linkend="service-jabber"/> service.
+		use the <xref linkend="service-jabber"/>.
 
 SERVICE l2tp
 	NAME Layer 2 Tunneling Protocol
@@ -611,7 +611,7 @@ SERVICE microsoft_ds
 		simultaneously.
 		-
 		Please refer to the <xref linkend="service-netbios_ssn"/>
-		service for more information.
+		for more information.
 
 SERVICE mms
 	NAME Microsoft Media Server
@@ -670,7 +670,7 @@ SERVICE netbios_dgm
 	EXAMPLE
 		server netbios_dgm accept
 	NOTES
-		See also the <xref linkend="service-samba"/> service.
+		See also the <xref linkend="service-samba"/>.
 		-
 		Keep in mind that this service broadcasts (to the broadcast
 		address of your LAN) UDP packets. If you place this service
@@ -684,7 +684,7 @@ SERVICE netbios_ns
 	EXAMPLE
 		server netbios_ns accept
 	NOTES
-		See also the <xref linkend="service-samba"/> service.
+		See also the <xref linkend="service-samba"/>.
 
 SERVICE netbios_ssn
 	NAME NETBIOS Session Service
@@ -692,7 +692,7 @@ SERVICE netbios_ssn
 	EXAMPLE
 		server netbios_ssn accept
 	NOTES
-		See also the <xref linkend="service-samba"/> service.
+		See also the <xref linkend="service-samba"/>.
 		-
 		Please keep in mind that newer NETBIOS clients prefer to use
 		port 445 (<xref linkend="service-microsoft_ds"/>) for the
@@ -706,7 +706,7 @@ SERVICE netbios_ssn
 		This timeout can be up to several minutes.
 		-
 		To overcome this problem you can explicitly REJECT the
-		<xref linkend="service-microsoft_ds"/> service with a
+		<xref linkend="service-microsoft_ds"/> with a
 		tcp-reset message:
 		-
 		server microsoft_ds reject with tcp-reset
@@ -733,7 +733,7 @@ SERVICE nfs
 		-
 		Since NFS queries the remote RPC server, it is required to
 		also be allowed to do so, by allowing the
-		<xref linkend="service-portmap"/> service too. Take care that
+		<xref linkend="service-portmap"/> too. Take care that
 		this is allowed by the running firewall when Sanewall tries
 		to query the RPC server. So you might have to setup NFS in
 		two steps: First add the portmap service and activate the
@@ -769,7 +769,7 @@ SERVICE nis
 		-
 		Since nis queries the remote RPC server, it is required to
 		also be allowed to do so, by allowing the
-		<xref linkend="service-portmap"/> service too. Take care that
+		<xref linkend="service-portmap"/> too. Take care that
 		this is allowed by the running firewall when Sanewall tries
 		to query the RPC server. So you might have to setup nis in
 		two steps: First add the portmap service and activate the
@@ -830,7 +830,7 @@ SERVICE nxserver
 		encryption.
 		-
 		Note that nxserver also needs the <xref linkend="service-ssh"/>
-		service to be enabled.
+		to be enabled.
 		-
 		This information has been extracted from this
 		The TCP ports used by nxserver are
@@ -1075,7 +1075,7 @@ SERVICE submission
 		server submission accept
 	NOTES
 		Submission is essentially normal SMTP with an SSL/TLS
-		negotation.
+		negotiation.
 
 SERVICE swat
 	NAME Samba Web Administration Tool
@@ -1189,7 +1189,7 @@ SERVICE xbox
 	EXAMPLE
 		client xbox accept
 	NOTES
-		Complex service definition for the Xbox live service.
+		Definition for the Xbox live service.
 		-
 		See program source for contributor details.
 
@@ -1202,3 +1202,98 @@ SERVICE xdmcp
 		See <ulink url="http://www.jirka.org/gdm-documentation/x70.html">Gnome Display Manager</ulink>
 		for a discussion about XDMCP and firewalls (Gnome Display
 		Manager is a replacement for XDM).
+
+SERVICE icmpv6
+	ALIAS ICMPV6
+	NAME Internet Control Message Protocol v6
+	WIKI http://en.wikipedia.org/wiki/ICMPv6
+	EXAMPLE
+		server icmpv6 accept
+
+SERVICE ipv6error
+	NAME ICMPv6 Error Handling
+	EXAMPLE
+		server ipv6error accept
+	NOTES
+		A number of icmpv6 error types are not treated equally
+		inbound and outbound.
+		-
+		The ipv6error rule wraps all of them in the following way:
+		<simplelist>
+		<member>allow incoming messages only for existing sessions</member>
+		<member>allow outgoing messages always</member>
+		</simplelist>
+		-
+		The following icmpv6 messages are handled:
+		<simplelist>
+		<member>destination-unreachable</member>
+		<member>packet-too-big</member>
+		<member>ttl-zero-during-transit</member>
+		<member>ttl-zero-during-reassembly</member>
+		<member>unknown-header-type</member>
+		<member>unknown-option</member>
+		</simplelist>
+		-
+		Sanewall sets up both rules the same way. In a router
+		with inface being internal and outface being external
+		the following will meet the recommendations of
+		<ulink url="http://tools.ietf.org/html/rfc4890">RFC
+		4890</ulink>:
+		<programlisting>server ipv6error accept</programlisting>
+		-
+		Interfaces should always have:
+		<programlisting>server ipv6error accept</programlisting>
+		set.
+		-
+		Do not use:
+		<programlisting>client ipv6error accept</programlisting>
+		unless you are controlling traffic on an router interface
+		where outface is the internal destination.
+
+SERVICE ipv6neigh
+	NAME IPv6 Neighbour discovery
+	EXAMPLE
+		client ipv6neigh accept
+		server ipv6neigh accept
+	NOTES
+		ICMPv6 does a great deal of automatic configuration
+		and discovery. There is no ARP and no need to manually
+		configure routers. To enable this functionality the
+		network neighbour and router solicitation/advertisement
+		messages should be enabled on each interface.
+		-
+		These rules are stateless since advertisement can happen
+		automatically as well as on solicitation.
+		-
+		Neighbour discovery (incoming) should always be enabled:
+		<programlisting>server ipv6neigh accept</programlisting>
+		-
+		Neighbour advertisement (outgoing) should always be enabled:
+		<programlisting>client ipv6neigh accept</programlisting>
+		-
+		The rules should not be used to pass packets across a
+		firewall (e.g. in a router) unless it is a bridge.
+
+SERVICE ipv6router
+	NAME IPv6 Router discovery
+	EXAMPLE
+		client ipv6router accept
+	NOTES
+		ICMPv6 does a great deal of automatic configuration
+		and discovery. There is no ARP and no need to manually
+		configure routers. To enable this functionality the
+		network neighbour and router solicitation/advertisement
+		messages should be enabled on each interface.
+		-
+		These rules are stateless since advertisement can happen
+		automatically as well as on solicitation.
+		-
+		Router discovery (incoming) should always be enabled:
+		<programlisting>client ipv6router accept</programlisting>
+		-
+		Router advertisement (outgoing) should be enabled on
+		a host that routes:
+		<programlisting>server ipv6router accept</programlisting>
+		-
+		The rules should not be used to pass packets across a
+		firewall (e.g. in a router) unless it is a bridge.

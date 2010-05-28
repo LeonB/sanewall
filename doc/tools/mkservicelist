@@ -103,9 +103,10 @@ while (<$fh>) {
     $services{$name}{"modnat"} =~ s/([^[:space:]]+)/nf_nat_$1/g;
     $services{$name}{"modnat"} =~ s/[[:space:]]+/,/g;
   }
-  if (/^rules_([[:alnum:]_]+)\(\) {/) {
+  if (/^rules_([[:alnum:]_]+)\(\) +{/) {
     $services{$1}{type} = "complex";
   }
+  $services{custom}{type} = "custom";
   if (/^ALL_SHOULD_ALSO_RUN="/) {
     s/^[^ ]* //;
     s/"$//;
@@ -284,6 +285,7 @@ foreach my $k (@keys) {
   my $natmod = coalesce($db{$k}{"modnat"}, $services{$k}{"modnat"});
   my $example = coalesce($db{$k}{"example"}, $services{$k}{"example"});
   my $notes = coalesce($db{$k}{"notes"}, $services{$k}{"notes"});
+  my $type = coalesce($services{$k}{"type"}, "simple");
   print O "\n";
   if ($dbalias{$k}) {
     my $official = $dbalias{$k};
@@ -291,7 +293,7 @@ foreach my $k (@keys) {
   }
 
   print O "  <variablelist id=\"service-$k\">\n";
-  print O "    <title>$k - $name\n";
+  print O "    <title>$k - $name - $type service\n";
   print O "      <indexterm>\n";
   print O "        <primary>$k</primary>\n";
   print O "        <secondary>$name</secondary>\n";
