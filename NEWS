@@ -9,6 +9,19 @@ Can be invoked as:
   sanewall -4 [whatever]  -- IPv4 mode (should show original behaviour)
   sanewall -6 [whatever]  -- IPv6 mode (ip6tables only)
 
+Please make sure you read the "Known Issues" and "IPv6 Support" sections
+of the README. If you choose to use this development version, please take
+the time to audit the output and ensure it meets your expectations and
+report any bugs or unexpected behaviour to the mailing list or bug tracker.
+
+Rename these configuration files (if you have them, they are optional):
+  RESERVED_IPS   ->   RESERVED_IPV4s
+  PRIVATE_IPS    ->   PRIVATE_IPV4
+  MULTICAST_IPS  ->   MULTICAST_IPV4
+
+There are new (optional) files for IPv6 addresses:
+  RESERVED_IPV6, PRIVATE_IPV6 and MULTICAST_IPV6
+
 
 2013/04/24:
 

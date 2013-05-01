@@ -26,8 +26,11 @@ exhaustive.
 
 You should also read the "IPv6 Support" section of this README.
 
-If you do choose to use this version, please report any bugs to the
-mailing list or bug tracker.
+If you do choose to use this version, please take the time to audit
+the output and ensure it meets your expectations.
+
+If you encounter any bugs or unexpected behaviour please report them
+to the mailing list or bug tracker.
 
 1. There are a variety of ICMPv6 packet types without helpers and
    not described here yet which are needed for full handling of IPv6.
