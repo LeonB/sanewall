@@ -647,7 +647,7 @@ sanewall_exit() {
 	then
 		echo
 		echo -n $"Sanewall: Restoring old firewall:"
-		iptables_restore_cmd <"${SANEWALL_SAVED}"
+		iptables_restore_cmd "${SANEWALL_SAVED}"
 		if [ $? -eq 0 ]
 		then
 			local restored="OK"
