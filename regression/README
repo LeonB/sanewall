@@ -74,6 +74,43 @@ or without IPv6 capability (i.e. post or pre 1.1.0) and can caters for
 the different defaults and variable names when run by FireHOL.
 
 
+Auditing and signing test configurations
+========================================
+When the iptables output of a configuration is known to be good it
+can be appended to the configuration file and gpg-signed using the
+"sigtool" program.
+
+Multiple signatures can be accumulated to give extra confidence
+regarding the validity of output. If you understand iptables well
+but do not program, creating sample configurations, auditing and
+signing them is a great way to contribute.
+
+To first sign a configuration, run:
+  ./sigtool tests/..../test.conf <gpgid> <verno>
+
+Where <gpgid> is a string that gpg will recognise for the purpose of
+selecting your gpg key and <verno> is the version string of the
+
+The sigtool will append the iptables-save output to the configuration
+file tests/..../test.conf in a way that the regression suite will
+remove it before running and automatically compare the output. Please
+send this updated file along with the new tests/..../test.sigs file
+to the mailing list.
+
+To add a signature to a configuration that has already been audited, run:
+  ./sigtool tests/..../test.conf <gpgid>
+and just send the updated sigs file to the mailing list.
+
+Note that there can only ever be a single audited output. It is not
+unthinkable that changes in future will mean that a different output
+could achieve identical aims... if this happens the suite will need
+to be updated to cope.
+
+The regression tool will automatically list the signatures on a test
+or you can run:
+  ./sigtool tests/..../test.conf <gpgid>
+
+
 Recommended services for testing with
 =====================================
 All services fall into one of these criteria:

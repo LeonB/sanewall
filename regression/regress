@@ -30,7 +30,7 @@ fi
 
 if [ "$notroot" -o $# -lt 1 ]
 then
-  echo "Usage: sudo ./runver -ok current|git-version|firehol..."
+  echo "Usage: sudo ./regress -ok current|git-version|firehol..."
   exit 1
 fi
 
