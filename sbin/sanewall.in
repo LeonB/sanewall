@@ -410,6 +410,9 @@ iptables_cmd() {
 			;;
 			-*prefix=*)
 			;;
+			--mac-source)
+				skip_next=1
+			;;
 			*)
 				search="$search $i"
 			;;
