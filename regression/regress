@@ -41,9 +41,9 @@ do
      d=current
      (cd .. && cat sbin/sanewall.in) > /tmp/sw-$d.$$
     ;;
-    firehol)
-     d=firehol
-     (cd .. && git show firehol-cvs-mirror:firehol.sh) > /tmp/sw-$d.$$
+    firehol*)
+     d=$v
+     (cd .. && git show $v:firehol.sh) > /tmp/sw-$d.$$
      test ! -s /tmp/$d.$$ || echo "You can get the firehol-cvs-mirror from https://github.com/philwhineray/firehol-fork.git"
 
     ;;

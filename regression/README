@@ -16,9 +16,9 @@ directory edits and all and tagged Sanewall versions 1.0.0 and 1.1.0.
 
 Any number of versions may be specified.
 
-You will need to have a local branch called firehol-cvs-mirror in order to
-run the FireHOL version. The recommended source is the cvs-mirror branch
-from here:
+You will need to have one or more local branches starting with the name
+'firehol' in order to run FireHOL versions. The recommended source is
+the cvs-mirror branch from here:
   https://github.com/philwhineray/firehol-fork.git
 
 Any .conf files under the tests directory will be run one by one for each
@@ -39,7 +39,7 @@ for the details.
 Comparison examples
 ===================
 Compare FireHOL to Sanewall first official release behaviour:
-  diff -r output/FireHOL output/1.0.0
+  diff -r output/firehol output/1.0.0
 
 Compare Sanewall IPv4 only to Sanewall with IPv6 behaviour:
   diff output/1.0.0 output/1.1.0
