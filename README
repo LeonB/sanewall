@@ -92,6 +92,10 @@ to the mailing list or bug tracker.
       ipv4 server ssh accept src not "${ip_v4}"
       ipv6 server ssh accept src not "${ip_v6}"
 
+9. Domain names in rules are only recognised as IPv4
+
+   Ideally you won't use domain names in your rules anyway. You will
+   also need to set your activation policy to ACCEPT to enable DNS lookups.
 
 Goals
 =====

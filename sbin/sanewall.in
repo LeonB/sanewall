@@ -430,7 +430,7 @@ iptables_cmd() {
 			*":"*)
 				ipv4_ok=0
 			;;
-			*"."*)
+			*"."*"."*)
 				ipv6_ok=0
 			;;
 		esac
