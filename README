@@ -78,21 +78,7 @@ to the mailing list or bug tracker.
    should not cause any problems, but can look odd when inspecting
    the tables directly.
 
-8. Using "src" will confuse complex rules at present and "src not" can
-   confuse even simple rules.
-
-   To avoid errors, rather than:
-      server ping accept src "${ip_mix}"
-      server ssh accept src not "${ip_mix}"
-
-   Write instead:
-      ivp4 server ping accept src "${ip_v4}"
-      ivp6 server ping accept src "${ip_v6}"
-
-      ipv4 server ssh accept src not "${ip_v4}"
-      ipv6 server ssh accept src not "${ip_v6}"
-
-9. Domain names in rules are only recognised as IPv4
+8. Domain names in rules are only recognised as IPv4
 
    Ideally you won't use domain names in your rules anyway. You will
    also need to set your activation policy to ACCEPT to enable DNS lookups.
@@ -205,9 +191,16 @@ all rules, except as follows:
       server ssh accept src "fe80::/64 192.168.0.0/24"
 
    Will should do the "right thing" and allow mix and match of addresses.
+   Note that creating a rule with e.g. "src not" will negate fully. For
+   example:
+      server ssh accept src not "10.0.0.0/8"
 
-   Note that using "src" will confuse complex rules at present and "src not"
-   can confuse even simple rules. See the "Known Issues" for a work-round.
+   Will accept any address that is not 10.0.0.0/8, including any IPv6.
+   If you mean not 10.0.0.0/8 and no IPv6 addresses you should restrict
+   the rule explicitly:
+      ipv4 server ssh accept src not "10.0.0.0/8"
+
+   The same applies if you negate only IPv6 addresses.
 
 3. ICMP and ICMPv6 are not identical. You will get warnings and/or errors
    if you try to include rules for an ICMP packet type for ICMPv6 and
