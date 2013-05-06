@@ -1,5 +1,12 @@
 2013/04/24:
 
+Release of version 1.0.1
+
+Fixes "mac" helper command for versions of iptables 1.4.12+
+
+
+2013/04/24:
+
 Release of version 1.0.0
 
 No functional changes from 0.9.10.
