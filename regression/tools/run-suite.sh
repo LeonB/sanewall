@@ -175,6 +175,7 @@ do
   ip6tables-save > "$v6out"
   sed -i -e 's/^Sanewall: //' -e 's/^FireHOL: //' "$logfile"
   sed -i -e '/^Processing file/s/ output\/[^/]*\// /' "$logfile"
+  sed -i -e '/^SOURCE/s/ of output\/[^/]*\// of /' "$logfile"
   sed -i -e 's;/sbin/iptables;iptables_cmd;' "$logfile"
   sed -i -e 's/^# .*/#/' -e '/^:/s/\[[0-9][0-9]*:[0-9][0-9]*\]$/[0:0]/' "$v4out"
   sed -e '1d' -e '/^\*nat/,/^#/{d}' "$v4out" > "$v4nnout"
