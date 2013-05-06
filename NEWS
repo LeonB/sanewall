@@ -1,3 +1,18 @@
+2013/05/06:
+
+Release of version 1.1.1
+
+When startup fails, both IPv4 and IPv6 firewalls are correctly restored.
+
+Fixes "mac" helper command for versions of iptables 1.4.12+ as per 1.0.1
+and also prevent mac addresses being seen as IPv6 addresses.
+
+Added a regression test framework.
+
+Improve IPv4/IPv6 address matching (some internal names such as mark.1 were
+being identified as IPv4 only).
+
+
 2013/04/24:
 
 Development series 1.1.0 starts

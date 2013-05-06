@@ -1,3 +1,21 @@
+sanewall (1.1.1) unstable; urgency=low
+
+  * Call to iptables_restore_cmd now works for IPv4+6
+    - Semantics are slightly different to iptables-restore(8) meaning
+      only IPv4 restoration was being honoured previously
+    - Fixes http://bugs.sanewall.org/sanewall/issues/89
+
+  * Added a regression test framework
+
+  * Fix "mac" helper command so that it works with iptables 1.4.12+
+    - Previous behaviour was deprecated in 1.4.3 (Jul 2009)
+    - Also prevent mac addresses being seen as IPv6 addresses
+
+  * Improve IPv4/IPv6 address matching
+    - Some internal names such as mark.1 were being identified as IPv4 only
+
+ -- Phil Whineray <phil@sanewall.org>  Mon,  6 May 2013 18:30:00 +0000
+
 sanewall (1.1.0) unstable; urgency=low
 
   * Update version for development series
