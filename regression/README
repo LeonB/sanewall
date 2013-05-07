@@ -67,10 +67,10 @@ and so forth.
 Writing new test configurations
 ===============================
 Take a look at this file:
-  tests/domain-names/succeed-with-activation-accept.conf
+  tests/domain-names/ipv6-if-available.conf
 
 It is written in such a way as to allow for being run by Sanewall with
-or without IPv6 capability (i.e. post or pre 1.1.0) and can caters for
+or without IPv6 capability (i.e. post or pre 1.1.0) and can cater for
 the different defaults and variable names when run by FireHOL.
 
 

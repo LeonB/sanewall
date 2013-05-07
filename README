@@ -78,10 +78,6 @@ to the mailing list or bug tracker.
    should not cause any problems, but can look odd when inspecting
    the tables directly.
 
-8. Domain names in rules are only recognised as IPv4
-
-   Ideally you won't use domain names in your rules anyway. You will
-   also need to set your activation policy to ACCEPT to enable DNS lookups.
 
 Goals
 =====

@@ -362,6 +362,7 @@ iptables_cmd() {
 		# Remove port range and log prefix which can contain : and .
 		# which would confuse ipv4 and ipv6 address detection
 		local skip_next=0
+		local host_next=0
 		local frag_param=0
 		local table_next=0
 		local search=""
@@ -388,6 +389,21 @@ iptables_cmd() {
 				ipv4_ok=0
 			;;
 			esac
+		elif [ $host_next -eq 1 ]
+		then
+			host_next=0
+                        local not4=`"${IPTABLES_CMD}" -C INPUT -s "$i" 2>&1 | grep "not found"`
+                        local not6=`"${IP6TABLES_CMD}" -C INPUT -s "$i" 2>&1 | grep "not found"`
+			if [ ! "$not4" -o ! "$not6" ]
+			then
+				# Use the output of the rule check command to
+				# test for IPv6/IPv4 resolution of name. If
+				# name resolves in one but not the other
+				# (the rule will never exist) then we can
+				# disable it.
+				if [ "$not4" ]; then ipv4_ok=0; fi
+				if [ "$not6" ]; then ipv6_ok=0; fi
+			fi
 		elif [ $table_next -eq 1 ]
 		then
 			table_next=0
@@ -400,6 +416,9 @@ iptables_cmd() {
 			case "$i" in
 			-f)
 				frag_param=1
+			;;
+			-s|-d)
+				host_next=1
 			;;
 			-t)
 				table_next=1
