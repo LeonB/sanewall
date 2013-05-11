@@ -37,11 +37,6 @@ then
 	echo >&2
 fi
 
-if [ "`echo $VERSION | grep '^@'`" ]
-then
-	echo 1>&2 "WARNING: ./configure not run: DO NOT USE IN PRODUCTION"
-fi
-
 # Remember who you are.
 SANEWALL_FILE="${0}"
 SANEWALL_DEFAULT_WORKING_DIRECTORY="${PWD}"
@@ -110,236 +105,107 @@ both() {
 
 export PATH="${PATH}:/bin:/usr/bin:/sbin:/usr/sbin"
 
-# External commands sanewall will need.
-# If one of those is not found, sanewall will refuse to run.
+find_exe() {
+	local IFS=:
+	local name="$1"
+	if [ "$name" = ":" ]; then echo ":"; return 0; fi
 
-which_cmd() {
-	local block=1
-	if [ "a${1}" = "a-n" ]
+	set -- $PATH
+	for dir in "$@"
+	do
+		if [ ! "$dir" ]; then dir="."; fi
+		if [ -x "$dir/$name" ]; then echo "$dir/$name"; return 0; fi
+	done
+	return 1
+}
+
+# Set the environment variable to the value given, unless the value
+# starts with an @ (./configure has not been run). In that case, try
+# to use the built-in default but verify it can be found.
+set_or_def() {
+	local value=
+
+	if [ "$1" = "-n" ]
 	then
-		local block=0
 		shift
-	fi
+		case "$2" in
+			'@'*) value="$3" ;;
+			*) value="$2" ;;
+		esac
+	else
+		case "$2" in
+			/*) if [ -x "$2" ]; then value="$2"; fi ;;
+			'@'*) value=$(find_exe "$3") ;;
+			*) value=$(find_exe "$2") ;;
+		esac
 
-	unalias $2 >/dev/null 2>&1
-	local cmd=`which $2 2>/dev/null | head -n 1`
-	if [ $? -gt 0 -o ! -x "${cmd}" ]
-	then
-		if [ ${block} -eq 1 ]
+		if [ ! "$value" ]
 		then
-			echo >&2
-			echo >&2 "ERROR:	Command '$2' not found in the system path."
-			echo >&2 "	Sanewall requires this command for its operation."
-			echo >&2 "	Please install the required package and retry."
-			echo >&2
-			echo >&2 "	Note that you need an operational 'which' command"
-			echo >&2 "	for sanewall to find all the external programs it"
-			echo >&2 "	needs. Check it yourself. Run:"
-			echo >&2
-			echo >&2 "	which $2"
+			echo "Missing required command: $1 (default $3)"
 			exit 1
 		fi
-		return 1
 	fi
 
-	eval $1=${cmd}
-	return 0
+	eval "$1='$value'"
 }
 
-# command on demand support.
-require_cmd() {
-	local block=1
-	if [ "a$1" = "a-n" ]
-	then
-		local block=0
-		shift
-	fi
+set_or_def AWK_CMD "@AWK@" "awk"
+set_or_def CAT_CMD "@CAT_CMD@" "cat"
+set_or_def CHMOD_CMD "@CHMOD_CMD@" "chmod"
+set_or_def CHOWN_CMD "@CHOWN_CMD@" "chown"
+set_or_def CUT_CMD "@CUT_CMD@" "cut"
+set_or_def DATE_CMD "@DATE_CMD@" "date"
+set_or_def EGREP_CMD "@EGREP_CMD@" "egrep"
+set_or_def EXPR_CMD "@EXPR_CMD@" "expr"
+set_or_def FIND_CMD "@FIND_CMD@" "find"
+set_or_def FOLD_CMD "@FOLD_CMD@" "fold"
+set_or_def GREP_CMD "@GREP@" "grep"
+set_or_def HEAD_CMD "@HEAD_CMD@" "head"
+set_or_def INSMOD_CMD "@INSMOD_CMD@" "modprobe"
+set_or_def IP6TABLES_CMD "@IP6TABLES_CMD@" "ip6tables"
+set_or_def IP6TABLES_RESTORE_CMD "@IP6TABLES_RESTORE_CMD@" "ip6tables-restore"
+set_or_def IP6TABLES_SAVE_CMD "@IP6TABLES_SAVE_CMD@" "ip6tables-save"
+set_or_def IPTABLES_CMD "@IPTABLES_CMD@" "iptables"
+set_or_def IPTABLES_RESTORE_CMD "@IPTABLES_RESTORE_CMD@" "iptables-restore"
+set_or_def IPTABLES_SAVE_CMD "@IPTABLES_SAVE_CMD@" "iptables-save"
+set_or_def LOCKFILE_CMD "@LOCKFILE_CMD@" ":"
+set_or_def LOGGER_CMD "@LOGGER_CMD@" "logger"
+set_or_def LSMOD_CMD "@LSMOD_CMD@" "lsmod"
+set_or_def MKDIR_CMD "@MKDIR_CMD@" "mkdir"
+set_or_def MV_CMD "@MV_CMD@" "mv"
+set_or_def PAGER_CMD "@PAGER_CMD@" "cat"
+set_or_def RENICE_CMD "@RENICE_CMD@" "echo"
+set_or_def RM_CMD "@RM_CMD@" "rm"
+set_or_def SED_CMD "@SED@" "sed"
+set_or_def SORT_CMD "@SORT_CMD@" "sort"
+set_or_def SYSCTL_CMD "@SYSCTL_CMD@" "sysctl"
+set_or_def TOUCH_CMD "@TOUCH_CMD@" "touch"
+set_or_def TR_CMD "@TR_CMD@" "tr"
+set_or_def UNAME_CMD "@UNAME_CMD@" "uname"
+set_or_def UNIQ_CMD "@UNIQ_CMD@" "uniq"
+set_or_def ZCAT_CMD "@ZCAT_CMD@" "zcat"
+set_or_def -n ZCAT_OPTS "@ZCAT_OPTS@" ""
 
-	# if one is found, return success
-	for x in "${@}"
-	do
-		eval var=`echo ${x} | tr 'a-z' 'A-Z'`_CMD
-		eval val=\$\{${var}\}
-		if [ -z "${val}" ]
-		then
-			which_cmd -n "${var}" "${x}"
-			test $? -eq 0 && return 0
-		fi
-	done
-
-	if [ $block -eq 1 ]
-	then
-		echo >&2
-		echo >&2 "ERROR:	SANEWALL REQUIRES THESE COMMANDS:"
-		echo >&2
-		echo >&2 "	${@}"
-		echo >&2
-		echo >&2 "	You have requested the use of an optional sanewall"
-		echo >&2 "	feature that requires certain external programs"
-		echo >&2 "	to be installed in the running system."
-		echo >&2
-		echo >&2 "	Please consult your Linux distribution manual to"
-		echo >&2 "	install the package(s) that provide these external"
-		echo >&2 "	programs and retry."
-		echo >&2
-		echo >&2 "	Note that you need an operational 'which' command"
-		echo >&2 "	for sanewall to find all the external programs it"
-		echo >&2 "	needs. Check it yourself. Run:"
-		echo >&2
-		for x in "${@}"
-		do
-			echo >&2 "	which $x"
-		done
-
-		exit 1
-	fi
-
-	return 1
+extra_wizard_commands() {
+	set_or_def IP_CMD "@IP_CMD@" "ip"
+	set_or_def SS_CMD "@SS_CMD@" "ss"
+	set_or_def HOSTNAME_CMD "@HOSTNAME_CMD@" "hostname"
 }
 
-# Currently the following commands are required only when needed.
-# (i.e. Command on Demand)
-#
-# wget or curl (either is fine)
-# zcat or gzcat or gzip (either or none is fine)
-# less or more (either or none is fine)
-# ip
-# ss
-# date
-# hostname
-# modprobe or insmod
-# gawk or awk
-# nice (none is fine)
-
-# Commands that are mandatory for sanewall operation:
-which_cmd CAT_CMD cat
-which_cmd CUT_CMD cut
-which_cmd CHOWN_CMD chown
-which_cmd CHMOD_CMD chmod
-which_cmd EGREP_CMD egrep
-which_cmd EXPR_CMD expr
-which_cmd FIND_CMD find
-which_cmd FOLD_CMD fold
-which_cmd GREP_CMD grep
-which_cmd HEAD_CMD head
-which_cmd LSMOD_CMD lsmod
-which_cmd MKDIR_CMD mkdir
-which_cmd MV_CMD mv
-which_cmd RM_CMD rm
-which_cmd SED_CMD sed
-which_cmd SORT_CMD sort
-which_cmd SYSCTL_CMD sysctl
-which_cmd TOUCH_CMD touch
-which_cmd TR_CMD tr
-which_cmd UNAME_CMD uname
-which_cmd UNIQ_CMD uniq
-which_cmd LOGGER_CMD logger
-
-if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv4" ]
+if [ "`echo $VERSION | ${GREP_CMD} '^@'`" ]
 then
-	which_cmd IPTABLES_CMD iptables
-	which_cmd IPTABLES_SAVE_CMD iptables-save
-	which_cmd IPTABLES_RESTORE_CMD iptables-restore
+	echo 1>&2 "WARNING: ./configure not run: DO NOT USE IN PRODUCTION"
 fi
-
-if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv6" ]
-then
-	which_cmd IP6TABLES_CMD ip6tables
-	which_cmd IP6TABLES_SAVE_CMD ip6tables-save
-	which_cmd IP6TABLES_RESTORE_CMD ip6tables-restore
-fi
-
-# Special commands
-pager_cmd() {
-	if [ -z "${LESS_CMD}" ]
-	then
-		require_cmd -n less more
-		test -z "${LESS_CMD}" && LESS_CMD="${MORE_CMD}"
-		test -z "${LESS_CMD}" && LESS_CMD="${CAT_CMD}"
-	fi
-
-	"${LESS_CMD}" "${@}"
-}
-
-zcat_cmd() {
-	require_cmd -n zcat gzcat gzip
-	test -z "${ZCAT_CMD}" && ZCAT_CMD="${GZCAT_CMD}"
-
-	if [ ! -z "${ZCAT_CMD}" ]
-	then
-		"${ZCAT_CMD}" "${@}"
-		return $?
-	elif [ ! -z "${GZIP_CMD}" ]
-	then
-		"${CAT_CMD}" "${@}" | "${GZIP_CMD}" -dc
-		return $?
-	fi
-
-	echo >&2 " "
-	echo >&2 " IMPORTANT WARNING:"
-	echo >&2 " ------------------"
-	echo >&2 " Sanewall cannot find any of the commands: zcat, gzcat, gzip."
-	echo >&2 " Make sure you have one of these available in the system path."
-	echo >&2 " "
-
-	return 1
-}
-
-gawk_cmd() {
-	require_cmd -n gawk awk
-	test -z "${GAWK_CMD}" && GAWK_CMD="${AWK_CMD}"
-
-	if [ ! -z "${GAWK_CMD}" ]
-	then
-		"${GAWK_CMD}" "${@}"
-		return $?
-	fi
-
-	echo >&2 " "
-	echo >&2 " IMPORTANT WARNING:"
-	echo >&2 " ------------------"
-	echo >&2 " Sanewall cannot find any of the commands: gawk, awk."
-	echo >&2 " Make sure you have one of these available in the system path."
-	echo >&2 " "
-
-	return 1
-}
 
 modprobe_cmd() {
-	require_cmd -n modprobe insmod
-	test -z "${MODPROBE_CMD}" && MODPROBE_CMD="${INSMOD_CMD}"
-
-	if [ ! -z "${MODPROBE_CMD}" ]
+	"${INSMOD_CMD}" "${@}"
+	status=$?
+	if [ $status -eq 17 ]
 	then
-		"${MODPROBE_CMD}" "${@}"
-		status=$?
-		if [ $status -eq 17 ]
-		then
-			# insmod: module already loaded - not a problem
-			return 0
-		else
-			return $status
-		fi
+		# insmod: module already loaded - not a problem
+		return 0
 	fi
-
-	echo >&2 " "
-	echo >&2 " IMPORTANT WARNING:"
-	echo >&2 " ------------------"
-	echo >&2 " Sanewall cannot find any of the commands: modprobe, insmod."
-	echo >&2 " Make sure you have one of these available in the system path."
-	echo >&2 " "
-
-	return 1
-}
-
-renice_cmd() {
-	if [ -z "${RENICE_CMD}" ]
-	then
-		require_cmd -n renice
-		test -z "${RENICE_CMD}" && RENICE_CMD=":"
-	fi
-
-	"${RENICE_CMD}" "${@}"
+	return $status
 }
 
 iptables_cmd() {
@@ -398,8 +264,8 @@ iptables_cmd() {
 		elif [ $host_next -eq 1 ]
 		then
 			host_next=0
-                        local not4=`"${IPTABLES_CMD}" -C INPUT -s "$i" 2>&1 | grep "not found"`
-                        local not6=`"${IP6TABLES_CMD}" -C INPUT -s "$i" 2>&1 | grep "not found"`
+                        local not4=`"${IPTABLES_CMD}" -C INPUT -s "$i" 2>&1 | ${GREP_CMD} "not found"`
+                        local not6=`"${IP6TABLES_CMD}" -C INPUT -s "$i" 2>&1 | ${GREP_CMD} "not found"`
 			if [ ! "$not4" -o ! "$not6" ]
 			then
 				# Use the output of the rule check command to
@@ -415,8 +281,8 @@ iptables_cmd() {
 			table_next=0
 			if [ ${ignore_missing_tables} -eq 1 ]
                         then
-			  grep -q "$i" /proc/net/ip6_tables_names || ipv6_ok=0
-			  grep -q "$i" /proc/net/ip_tables_names || ipv4_ok=0
+			  ${GREP_CMD} -q "$i" /proc/net/ip6_tables_names || ipv6_ok=0
+			  ${GREP_CMD} -q "$i" /proc/net/ip_tables_names || ipv4_ok=0
                         fi
 		else
 			case "$i" in
@@ -521,14 +387,14 @@ iptables_restore_cmd() {
 
 	if [ "$IPVER" = "ipv4" -o  "$IPVER" = "both" ]
 	then
-		sed -ne '/^#IPV4-START/,/^#IPV4-END/p' ${file} | \
+		${SED_CMD} -ne '/^#IPV4-START/,/^#IPV4-END/p' ${file} | \
 			"${IPTABLES_RESTORE_CMD}" "$@"
 		status4=$?
 	fi
 
 	if [ "$IPVER" = "ipv6" -o  "$IPVER" = "both" ]
 	then
-		sed -ne '/^#IPV6-START/,/^#IPV6-END/p' ${file} | \
+		${SED_CMD} -ne '/^#IPV6-START/,/^#IPV6-END/p' ${file} | \
 			"${IP6TABLES_RESTORE_CMD}" "$@"
 		status6=$?
 	fi
@@ -549,14 +415,12 @@ SANEWALL_LOCK_FILE="/var/run/sanewall.lck"
 SANEWALL_LOCK_FILE_TIMEOUT=600
 
 sanewall_concurrent_run_lock() {
-	require_cmd -n lockfile
-
 	if [ -f "${SANEWALL_LOCK_FILE}" ]
 	then
 		echo >&2 "Sanewall is already running. Waiting for the other process to exit..."
 	fi
 
-	if [ -z "${LOCKFILE_CMD}" ]
+	if [ "${LOCKFILE_CMD}" = ":" ]
 	then
 		local c=0
 		while [ -f "${SANEWALL_LOCK_FILE}" ]
@@ -566,7 +430,7 @@ sanewall_concurrent_run_lock() {
 			sleep 1
 		done
 
-		touch "${SANEWALL_LOCK_FILE}"
+		${TOUCH_CMD} "${SANEWALL_LOCK_FILE}"
 
 	else
 		${LOCKFILE_CMD} -1 -r ${SANEWALL_LOCK_FILE_TIMEOUT} -l ${SANEWALL_LOCK_FILE_TIMEOUT} "${SANEWALL_LOCK_FILE}"
@@ -579,34 +443,20 @@ sanewall_concurrent_run_lock() {
 umask 077
 
 # Be nice on production environments
-renice_cmd 10 $$ >/dev/null 2>/dev/null
+${RENICE_CMD} 10 $$ >/dev/null 2>/dev/null
 
 # Use the old, static FIREHOL minor version
 FIREHOL_MINOR_VERSION=257
 
 if [ "${IPVER}" = "ipv6" ]
 then
-  list="IP6TABLES_CMD IP6TABLES_SAVE_CMD IP6TABLES_RESTORE_CMD"
   TABLES="/proc/net/ip6_tables_names"
 elif [ "${IPVER}" = "ipv4" ]
 then
-  list="IPTABLES_CMD IPTABLES_SAVE_CMD IPTABLES_RESTORE_CMD"
   TABLES="/proc/net/ip_tables_names"
 else
-  list="IPTABLES_CMD IPTABLES_SAVE_CMD IPTABLES_RESTORE_CMD IP6TABLES_CMD IP6TABLES_SAVE_CMD IP6TABLES_RESTORE_CMD"
   TABLES="/proc/net/ip_tables_names /proc/net/ip6_tables_names"
 fi
-
-for check in $list
-do
-        checkname=`echo $check | ${SED_CMD} -e 's/_CMD$//' | ${TR_CMD} A-Z_ a-z-`
-	eval checkenv=\$$check
-	if [ -z "${checkenv}" -o ! -x "${checkenv}" ]; then
-		echo >&2 "Cannot find an executable ${checkname} command."
-		exit 0
-	fi
-done
-
 
 # Initialize iptables
 iptables_cmd -nxvL >/dev/null 2>&1
@@ -651,7 +501,7 @@ else
 fi
 
 # The default configuration file, it can be changed on the command line
-SANEWALL_CONFIG_DIR="@SANEWALL_CONFIG_DIR@"
+set_or_def -n SANEWALL_CONFIG_DIR "@SANEWALL_CONFIG_DIR@" "/etc/sanewall"
 SANEWALL_CONFIG="${SANEWALL_CONFIG_DIR}/sanewall.conf"
 
 
@@ -737,7 +587,7 @@ sanewall_exit() {
 	fi
 
 	# remove the lock
-	test -f "${SANEWALL_LOCK_FILE}" && rm -f "${SANEWALL_LOCK_FILE}"
+	test -f "${SANEWALL_LOCK_FILE}" && ${RM_CMD} -f "${SANEWALL_LOCK_FILE}"
 
 	return 0
 }
@@ -767,7 +617,7 @@ fi
 # prepare the file that will hold all modules to be loaded.
 # this is needed only when we are going to save the firewall
 # with iptables-save.
-cat >"${SANEWALL_DIR}/modules_to_load.sh" <<EOFMTL
+${CAT_CMD} >"${SANEWALL_DIR}/modules_to_load.sh" <<EOFMTL
 #!/bin/sh
 # Generated by sanewall to restore the kernel modules required
 # by the last saved sanewall generated firewall.
@@ -2631,26 +2481,6 @@ cd "${SANEWALL_DEFAULT_WORKING_DIRECTORY}" || exit 1
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # ------------------------------------------------------------------------------
 
-# Fetch a URL and output it to the standard output.
-sanewall_wget() {
-	local url="${1}"
-
-	require_cmd wget curl
-
-	if [ ! -z "${WGET_CMD}" ]
-	then
-		${WGET_CMD} -O - "${url}" 2>/dev/null
-		return $?
-	elif [ ! -z "${CURL_CMD}" ]
-	then
-		${CURL_CMD} -s "${url}"
-		return $?
-	fi
-
-	error "Cannot use either 'wget' or 'curl' to fetch '${url}'."
-	return 1
-}
-
 ecn_shame() {
 	softwarning "ECN_SHAME IP list no longer available, helper is ignored."
 	return 0
@@ -3602,7 +3432,7 @@ fi
 if [ -z "${KERNEL_CONFIG}" -a -f "/proc/config.gz" ]
 then
 	KERNEL_CONFIG="/proc/config.gz"
-	zcat_cmd /proc/config.gz >"${SANEWALL_DIR}/kcfg" || KERNEL_CONFIG=
+	${ZCAT_CMD} /proc/config.gz >"${SANEWALL_DIR}/kcfg" || KERNEL_CONFIG=
 fi
 
 if [ -z "${KERNEL_CONFIG}" -a -f "/lib/modules/`${UNAME_CMD} -r`/build/.config" ]
@@ -3668,11 +3498,11 @@ check_kernel_config() {
 	eval local kcfg1="\$${1}"
 
 	# without _IP_
-	local t=`echo ${1} | sed "s/_IP_//g"`
+	local t=`echo ${1} | ${SED_CMD} "s/_IP_//g"`
 	eval local kcfg2="\$${t}"
 
 	# _CONNTRACK_ as _CT_
-	local t=`echo ${1} | sed "s/_CONNTRACK_/_CT_/g"`
+	local t=`echo ${1} | ${SED_CMD} "s/_CONNTRACK_/_CT_/g"`
 	eval local kcfg3="\$${t}"
 
 	# prefer the kernel 2.6.20+ way
@@ -4130,14 +3960,14 @@ rule_action_param() {
 						local overflow="REJECT"
 
 						# if we have a custom overflow action, parse it.
-						test "${action_param[3]}" = "overflow" && local overflow="`echo "${action_param[4]}" | tr "a-z" "A-Z"`"
+						test "${action_param[3]}" = "overflow" && local overflow="`echo "${action_param[4]}" | ${TR_CMD} "a-z" "A-Z"`"
 
 						# unset the action_param, so that if this rule does not include NEW connections,
 						# we will not append anything to the generated iptables statements.
 						local -a action_param=()
 
 						# find is this rule matches NEW connections
-						local has_new=`echo "${state}" | grep -i NEW`
+						local has_new=`echo "${state}" | ${GREP_CMD} -i NEW`
 						local do_accept_limit=0
 						if [ -z "${statenot}" ]
 						then
@@ -4152,14 +3982,14 @@ rule_action_param() {
 						# to pass.
 						if [ "${do_accept_limit}" = "1" ]
 						then
-							local accept_limit_chain="`echo "ACCEPT LIMIT ${freq} ${burst} ${overflow}" | tr " /." "___"`"
+							local accept_limit_chain="`echo "ACCEPT LIMIT ${freq} ${burst} ${overflow}" | ${TR_CMD} " /." "___"`"
 
 							# does the chain we need already exist?
 							if [ ! -f "${SANEWALL_CHAINS_DIR}/${accept_limit_chain}" ]
 							then
 								# the chain does not exist. create it.
 								iptables ${table} -N "${accept_limit_chain}"
-								touch "${SANEWALL_CHAINS_DIR}/${accept_limit_chain}"
+								${TOUCH_CMD} "${SANEWALL_CHAINS_DIR}/${accept_limit_chain}"
 
 								# first, if the traffic is not a NEW connection, allow it.
 								# doing this first will speed up normal traffic.
@@ -4207,7 +4037,7 @@ rule_action_param() {
 						local -a action_param=()
 
 						# find is this rule matches NEW connections
-						local has_new=`echo "${state}" | grep -i NEW`
+						local has_new=`echo "${state}" | ${GREP_CMD} -i NEW`
 						local do_accept_recent=0
 						if [ -z "${statenot}" ]
 						then
@@ -4222,14 +4052,14 @@ rule_action_param() {
 						# to pass.
 						if [ "${do_accept_recent}" = "1" ]
 						then
-							local accept_recent_chain="`echo "ACCEPT RECENT $name $seconds $hits" | tr " /." "___"`"
+							local accept_recent_chain="`echo "ACCEPT RECENT $name $seconds $hits" | ${TR_CMD} " /." "___"`"
 
 							# does the chain we need already exist?
 							if [ ! -f "${SANEWALL_CHAINS_DIR}/${accept_recent_chain}" ]
 							then
 								# the chain does not exist. create it.
 								iptables ${table} -N "${accept_recent_chain}"
-								touch "${SANEWALL_CHAINS_DIR}/${accept_recent_chain}"
+								${TOUCH_CMD} "${SANEWALL_CHAINS_DIR}/${accept_recent_chain}"
 
 								# first, if the traffic is not a NEW connection, allow it.
 								# doing this first will speed up normal traffic.
@@ -4265,7 +4095,7 @@ rule_action_param() {
 						then
 							# the chain does not exist. create it.
 							iptables ${table} -N "${name}"
-							touch "${SANEWALL_CHAINS_DIR}/${name}"
+							${TOUCH_CMD} "${SANEWALL_CHAINS_DIR}/${name}"
 
 							iptables -A "${name}" -m state --state ESTABLISHED -j ACCEPT
 
@@ -4627,7 +4457,7 @@ rule() {
 						srctypenot="!"
 					fi
 					test ${softwarnings} -eq 1 -a ! "${srctype}" = "" && softwarning "Overwritting param: srctype '${srctype}' becomes '${1}'"
-					srctype="`echo ${1} | sed "s|^ \+||" | sed "s| \+\$||" | sed "s| \+|,|g" | tr a-z A-Z`"
+					srctype="`echo ${1} | ${SED_CMD} "s|^ \+||" | ${SED_CMD} "s| \+\$||" | ${SED_CMD} "s| \+|,|g" | ${TR_CMD} a-z A-Z`"
 				else
 					dsttypenot=
 					if [ "${1}" = "not" -o "${1}" = "NOT" ]
@@ -4636,7 +4466,7 @@ rule() {
 						dsttypenot="!"
 					fi
 					test ${softwarnings} -eq 1 -a ! "${dsttype}" = "" && softwarning "Overwritting param: dsttype '${dsttype}' becomes '${1}'"
-					dsttype="`echo ${1} | sed "s|^ \+||" | sed "s| \+\$||" | sed "s| \+|,|g" | tr a-z A-Z`"
+					dsttype="`echo ${1} | ${SED_CMD} "s|^ \+||" | ${SED_CMD} "s| \+\$||" | ${SED_CMD} "s| \+|,|g" | ${TR_CMD} a-z A-Z`"
 				fi
 				shift
 				;;
@@ -4652,7 +4482,7 @@ rule() {
 						dsttypenot="!"
 					fi
 					test ${softwarnings} -eq 1 -a ! "${dsttype}" = "" && softwarning "Overwritting param: dsttype '${dsttype}' becomes '${1}'"
-					dsttype="`echo ${1} | sed "s|^ \+||" | sed "s| \+\$||" | sed "s| \+|,|g" | tr a-z A-Z`"
+					dsttype="`echo ${1} | ${SED_CMD} "s|^ \+||" | ${SED_CMD} "s| \+\$||" | ${SED_CMD} "s| \+|,|g" | ${TR_CMD} a-z A-Z`"
 				else
 					srctypenot=
 					if [ "${1}" = "not" -o "${1}" = "NOT" ]
@@ -4661,7 +4491,7 @@ rule() {
 						srctypenot="!"
 					fi
 					test ${softwarnings} -eq 1 -a ! "${srctype}" = "" && softwarning "Overwritting param: srctype '${srctype}' becomes '${1}'"
-					srctype="`echo ${1} | sed "s|^ \+||" | sed "s| \+\$||" | sed "s| \+|,|g" | tr a-z A-Z`"
+					srctype="`echo ${1} | ${SED_CMD} "s|^ \+||" | ${SED_CMD} "s| \+\$||" | ${SED_CMD} "s| \+|,|g" | ${TR_CMD} a-z A-Z`"
 				fi
 				shift
 				;;
@@ -6213,12 +6043,12 @@ wait_for_interface() {
 		timeout=$1
 	fi
 
-	local start=`date +%s`
+	local start=`${DATE_CMD} +%s`
 	local found=0
 
-	while [ "`date +%s`" -lt $(($start+$timeout)) -a $found -eq 0 ]
+	while [ "`${DATE_CMD} +%s`" -lt $(($start+$timeout)) -a $found -eq 0 ]
 	do
-		local addr=`ip addr show $iface 2> /dev/null | awk '$1 ~ /^inet$/ {print $2}'`
+		local addr=`${IP_CMD} addr show $iface 2> /dev/null | ${AWK_CMD} '$1 ~ /^inet$/ {print $2}'`
 		if [ -n "$addr" ]
 		then
 			found=1
@@ -6270,7 +6100,7 @@ kernel_maj_min() {
 	kmaj=$1
 	kmin=$2
 
-	set -- $(uname -r)
+	set -- $(${UNAME_CMD} -r)
 	eval $kmaj=\$1 $kmin=\$2
 }
 kernel_maj_min KERNELMAJ KERNELMIN
@@ -6421,7 +6251,7 @@ case "${arg}" in
 				echo
 				"${IP6TABLES_CMD}" -nxvL
 			fi
-		) | pager_cmd
+		) | ${PAGER_CMD}
 		exit $?
 		;;
 
@@ -6831,11 +6661,7 @@ fi
 
 if [ "${SANEWALL_MODE}" = "WIZARD" ]
 then
-	# require commands for wizard mode
-	require_cmd ip
-	require_cmd ss
-	require_cmd date
-	require_cmd hostname
+	extra_wizard_commands
 
 	wizard_ask() {
 		local prompt="${1}"; shift
@@ -7673,7 +7499,7 @@ EOF
 
 # at the same time, replace all full iptables/ip6tables references with our
 # versions to protect the currently running firewall
-${CAT_CMD} ${SANEWALL_CONFIG} | ${SED_CMD} -e "s|${IPTABLES_CMD}|ipv4 iptables|g" -e "s|${IP6TABLES_CMD}|ipv6 iptables|g" | gawk_cmd -f "${SANEWALL_TMP}.awk" >${SANEWALL_TMP}
+${CAT_CMD} ${SANEWALL_CONFIG} | ${SED_CMD} -e "s|${IPTABLES_CMD}|ipv4 iptables|g" -e "s|${IP6TABLES_CMD}|ipv6 iptables|g" | ${AWK_CMD} -f "${SANEWALL_TMP}.awk" >${SANEWALL_TMP}
 ${RM_CMD} -f "${SANEWALL_TMP}.awk"
 
 # ------------------------------------------------------------------------------
@@ -7876,16 +7702,16 @@ then
 	# Save the list of modules we need to run to restore the firewall.
 	if [ -f "${SANEWALL_SPOOL_DIR}/last_save_modules.sh" ]
 	then
-		mv "${SANEWALL_SPOOL_DIR}/last_save_modules.sh" "${SANEWALL_SPOOL_DIR}/last_save_modules.sh.old"
+		${MV_CMD} "${SANEWALL_SPOOL_DIR}/last_save_modules.sh" "${SANEWALL_SPOOL_DIR}/last_save_modules.sh.old"
 	fi
 
-	mv "${SANEWALL_DIR}/modules_to_load.sh" "${SANEWALL_SPOOL_DIR}/last_save_modules.sh"
+	${MV_CMD} "${SANEWALL_DIR}/modules_to_load.sh" "${SANEWALL_SPOOL_DIR}/last_save_modules.sh"
 	if [ $? -gt 0 ]
 	then
 		error "Cannot save modules restoration script to '${SANEWALL_SPOOL_DIR}/last_save_modules.sh'."
 	else
-		chown root:root "${SANEWALL_SPOOL_DIR}/last_save_modules.sh"
-		chmod 700 "${SANEWALL_SPOOL_DIR}/last_save_modules.sh"
+		${CHOWN_CMD} root:root "${SANEWALL_SPOOL_DIR}/last_save_modules.sh"
+		${CHMOD_CMD} 700 "${SANEWALL_SPOOL_DIR}/last_save_modules.sh"
 	fi
 
 	exit 0
