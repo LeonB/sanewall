@@ -31,7 +31,6 @@ AC_SUBST(SANEWALL_CONFIG_DIR)
 AC_CONFIG_FILES([
 	Makefile
 	sbin/Makefile
-	sbin/sanewall
 	m4/Makefile
 	doc/Makefile
 	doc/tools/Makefile
@@ -42,5 +41,7 @@ AC_CONFIG_FILES([
 	examples/Makefile
 	etc/Makefile
 	])
+
+AC_CONFIG_FILES([sbin/sanewall], [chmod +x sbin/sanewall])
 
 AC_OUTPUT
