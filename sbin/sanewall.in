@@ -7622,9 +7622,9 @@ ${CAT_CMD} >"${SANEWALL_TMP}.awk" <<"EOF"
 { print }
 EOF
 
-# at the same time, replace all iptables_cmd references with just
-# the word 'iptables' to protect the currently running firewall
-${CAT_CMD} ${SANEWALL_CONFIG} | ${SED_CMD} "s|iptables_cmd|iptables|g" | gawk_cmd -f "${SANEWALL_TMP}.awk" >${SANEWALL_TMP}
+# at the same time, replace all full iptables/ip6tables references with our
+# versions to protect the currently running firewall
+${CAT_CMD} ${SANEWALL_CONFIG} | ${SED_CMD} -e "s|${IPTABLES_CMD}|ipv4 iptables|g" -e "s|${IP6TABLES_CMD}|ipv6 iptables|g" | gawk_cmd -f "${SANEWALL_TMP}.awk" >${SANEWALL_TMP}
 ${RM_CMD} -f "${SANEWALL_TMP}.awk"
 
 # ------------------------------------------------------------------------------
