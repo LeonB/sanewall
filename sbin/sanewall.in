@@ -23,6 +23,7 @@
 #       along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #       See the file COPYING for details.
+if [ "$SANEWALL_DEBUGGING" ]; then set -v; set -x; fi
 
 # See ChangeLog for details
 VERSION=@PACKAGE_VERSION@
