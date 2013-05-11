@@ -37,6 +37,11 @@ then
 	echo >&2
 fi
 
+if [ "`echo $VERSION | grep '^@'`" ]
+then
+	echo 1>&2 "WARNING: ./configure not run: DO NOT USE IN PRODUCTION"
+fi
+
 # Remember who you are.
 SANEWALL_FILE="${0}"
 SANEWALL_DEFAULT_WORKING_DIRECTORY="${PWD}"
