@@ -1,3 +1,10 @@
+sanewall (1.0.2) unstable; urgency=low
+
+  * Fix kernel version detection so that it is more flexible and
+    less error prone.
+
+ -- Phil Whineray <phil@sanewall.org>  Sun, 12 May 2013 15:25:00 +0000
+
 sanewall (1.0.1) unstable; urgency=low
 
   * Fix "mac" helper command so that it works with iptables 1.4.12+

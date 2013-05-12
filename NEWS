@@ -1,3 +1,11 @@
+2013/05/12:
+
+Release of version 1.0.2
+
+Fix kernel version detection so that it is more flexible and less error
+prone (3.8-1-amd64 was breaking the original).
+
+
 2013/05/06:
 
 Release of version 1.0.1
