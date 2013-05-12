@@ -1,3 +1,26 @@
+sanewall (1.1.2) unstable; urgency=low
+
+  * Fix kernel version detection so that it is more flexible and
+    less error prone.
+
+  * Configure script improvements
+    - Set /usr/local/etc as the location for Sanewall to look in as well
+      as to store configuration files in if --sysconfdir is not given
+      Resolves: http://bugs.sanewall.org/sanewall/issues/78
+    -  Make the generated sbin/sanewall executable
+
+  * The unconfigured sanewall.in issues a warning when it is run directly
+
+  * Allow switching on of debug output by setting environment variable
+    SANEWALL_DEBUGGING to a non-empty value.
+
+  * Handle domain names that refer to records that are IPv4, IPv6 or both
+
+  * Fix protection against direct use of /sbin/iptables and /sbin/ip6tables
+    that were broken from 1.1.0.
+
+ -- Phil Whineray <phil@sanewall.org>  Sun, 12 May 2013 16:35:00 +0000
+
 sanewall (1.1.1) unstable; urgency=low
 
   * Call to iptables_restore_cmd now works for IPv4+6

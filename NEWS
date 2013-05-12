@@ -1,3 +1,38 @@
+2013/05/12:
+
+Release of version 1.1.2
+
+Fix kernel version detection so that it is more flexible and less error
+prone (3.8-1-amd64 was breaking the original).
+
+Configure script makes sanewall executable. The unconfigured sanewall.in
+issues a warning when it is run directly.
+
+Configure script now sets /usr/local/etc as the location for Sanewall
+to look in as well as store configuration files in if --sysconfdir is not
+given, solving http://bugs.sanewall.org/sanewall/issues/78
+
+Allow switching on of debug output by setting environment variable
+SANEWALL_DEBUGGING to a non-empty value.
+
+Handle domain names that refer to records that are IPv4, IPv6 or both
+(previously they were assumed to be IPv4 only).
+
+Fix protection against direct use of /sbin/iptables and /sbin/ip6tables
+that were broken from 1.1.0.
+
+Note that the fixes to IPv4/IPv6 matching from version 1.1.1 also had
+the effect of resolving the problems previosly associated with "src not"
+on all rules and "src" on some. Both of these constructs should now be
+fine to use without an ipv4/ipv6 prefix. Note however that:
+   server ssh accept src not some-IPv4
+
+Accepts all non-matching IPv4 addresses and all IPv6 addresses (since none
+match) so if you want to stop ipv6 addresses you need to do so by limiting
+the rule to IPv4 space:
+   ipv4 server ssh accept src not some-IPv4
+
+
 2013/05/06:
 
 Release of version 1.1.1
@@ -30,7 +65,7 @@ the time to audit the output and ensure it meets your expectations and
 report any bugs or unexpected behaviour to the mailing list or bug tracker.
 
 Rename these configuration files (if you have them, they are optional):
-  RESERVED_IPS   ->   RESERVED_IPV4s
+  RESERVED_IPS   ->   RESERVED_IPV4
   PRIVATE_IPS    ->   PRIVATE_IPV4
   MULTICAST_IPS  ->   MULTICAST_IPV4
 
