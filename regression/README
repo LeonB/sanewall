@@ -89,7 +89,8 @@ To first sign a configuration, run:
   ./sigtool tests/..../test.conf <gpgid> <verno>
 
 Where <gpgid> is a string that gpg will recognise for the purpose of
-selecting your gpg key and <verno> is the version string of the
+selecting your gpg key and <verno> is the version of the output that
+has been audited as correct for the test in question.
 
 The sigtool will append the iptables-save output to the configuration
 file tests/..../test.conf in a way that the regression suite will
@@ -108,7 +109,7 @@ to be updated to cope.
 
 The regression tool will automatically list the signatures on a test
 or you can run:
-  ./sigtool tests/..../test.conf <gpgid>
+  ./sigtool tests/..../test.conf
 
 
 Recommended services for testing with
