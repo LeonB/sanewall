@@ -3335,6 +3335,10 @@ runcmd() {
 	local cmd="${1}"; shift
 
 	"${cmd}" "$@" >${SANEWALL_OUTPUT}.log 2>&1
+	if [ "$SANEWALL_DEBUGGING" ]
+	then
+		"${CAT_CMD}" ${SANEWALL_OUTPUT}.log 1>&2
+	fi
 	local r=$?
 	test ${r} -gt 0 && runtime_error ${check} ${r} ${line} "${cmd}" "$@"
 
