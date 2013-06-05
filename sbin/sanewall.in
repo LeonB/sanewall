@@ -426,6 +426,9 @@ iptables_cmd() {
 			-s|-d)
 				host_next=1
 			;;
+			-i|-o)
+				skip_next=1
+			;;
 			-t)
 				table_next=1
 			;;
