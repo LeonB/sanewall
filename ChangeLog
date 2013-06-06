@@ -1,3 +1,13 @@
+sanewall (1.1.3) unstable; urgency=low
+
+  * Prevent VLAN interfaces interfering with IPv4/IPv6 detection
+    - Fixes http://bugs.sanewall.org/sanewall/issues/95
+
+  * Reduce autotools version requirement to 2.63
+    - Fixes http://bugs.sanewall.org/sanewall/issues/92
+
+ -- Phil Whineray <phil@sanewall.org>  Thu,  6 Jun 2013 11:22:00 +0000
+
 sanewall (1.1.2) unstable; urgency=low
 
   * Fix kernel version detection so that it is more flexible and
