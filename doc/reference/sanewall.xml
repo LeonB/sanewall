@@ -177,11 +177,10 @@
     <varlistentry><term>condrestart</term>
       <listitem>
         <para>
-          Starts the <application>Sanewall</application> firewall only if
-          it is not already active. It does not detect a modified
-          configuration file, only verifies that
-          <application>Sanewall</application> has been started in the past
-          and not stopped yet.
+          Restarts the <application>Sanewall</application> firewall only if
+          it is already active. This is the generally expected behaviour
+          (but opposite to <application>FireHOL</application> and
+          <application>Sanewall</application> prior to 1.0.3, 1.1.4).
         </para>
       </listitem>
     </varlistentry>
