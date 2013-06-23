@@ -275,7 +275,7 @@
         <para>
           <application>Sanewall</application> will not stop or alter the
           running firewall. The configuration file is given in the standard
-          output of <command>sAnewall</command>, thus
+          output of <command>sanewall</command>, thus
           <userinput>sanewall helpme > /tmp/sanewall.conf</userinput>
           will produce the output in <filename>/tmp/sanewall.conf</filename>.
         </para>
