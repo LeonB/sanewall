@@ -6377,22 +6377,50 @@ case "${arg}" in
 	status)
 		test ! -z "${1}" && softwarning "Arguments after parameter '${arg}' are ignored."
 		(
-			echo
-			echo "--- MANGLE ---------------------------------------------------------------------"
-			echo
-			iptables_cmd -t mangle -nxvL
+			if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv4" ]
+			then
+				echo
+				echo
+				echo "--- MANGLE IPv4 ----------------------------------------------------------------"
+				echo
+				"${IPTABLES_CMD}" -t mangle -nxvL
+			fi
 
-			echo
-			echo
-			echo "--- NAT ------------------------------------------------------------------------"
-			echo
-			iptables_cmd --ignore-missing -t nat -nxvL
+			if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv6" ]
+			then
+				echo
+				echo
+				echo "--- MANGLE IPv6 ----------------------------------------------------------------"
+				echo
+				"${IP6TABLES_CMD}" -t mangle -nxvL
+			fi
 
-			echo
-			echo
-			echo "--- FILTER ---------------------------------------------------------------------"
-			echo
-			iptables_cmd -nxvL
+			if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv4" ]
+			then
+				echo
+				echo
+				echo "--- NAT IPv4 -------------------------------------------------------------------"
+				echo
+				"${IPTABLES_CMD}" -t nat -nxvL
+			fi
+
+			if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv4" ]
+			then
+				echo
+				echo
+				echo "--- FILTER IPv4 ----------------------------------------------------------------"
+				echo
+				"${IPTABLES_CMD}" -nxvL
+			fi
+
+			if [ "${IPVER}" = "both" -o  "${IPVER}" = "ipv6" ]
+			then
+				echo
+				echo
+				echo "--- FILTER IPv6 ----------------------------------------------------------------"
+				echo
+				"${IP6TABLES_CMD}" -nxvL
+			fi
 		) | pager_cmd
 		exit $?
 		;;
