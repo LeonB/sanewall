@@ -6370,7 +6370,7 @@ case "${arg}" in
 
 	condrestart)
 		test ! -z "${1}" && test ${1} != "--" && softwarning "Arguments after parameter '${arg}' are ignored."
-		test -f "${SANEWALL_LOCK_DIR}/sanewall" && exit 0
+		test -f "${SANEWALL_LOCK_DIR}/sanewall" || exit 0
 		SANEWALL_MODE="START"
 		;;
 
