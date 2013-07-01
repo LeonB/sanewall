@@ -164,7 +164,7 @@ db-valid: \
 		$(SANEWALLMANUALXML_CHAPTERS) \
 		$(SANEWALLMANUALXML_REFERENCES) \
 		$(SANEWALLMANUALXML_GENERATED) \
-		sanewall-manual-info.xml
+		sanewall.ent
 	$(XMLLINT) $(XMLLINT_FLAGS) --noout --postvalid $<
 	touch db-valid
 
@@ -187,7 +187,7 @@ endif
 
 EXTRA_DIST = \
 	services-db.data \
-	sanewall-manual-info.xml \
+	sanewall.ent \
 	$(SANEWALLMANUALXML_GENERATED) \
 	db-valid \
 	$(SANEWALLMANUALXML_CSS) \
@@ -202,7 +202,7 @@ CLEANFILES =
 DISTCLEANFILES =
 
 MAINTAINERCLEANFILES = \
-	sanewall-manual-info.xml \
+	sanewall.ent \
 	$(SANEWALLMANUALXML_GENERATED) \
 	db-valid \
 	$(SANEWALLMANUALMAN_GENERATED) \

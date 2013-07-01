@@ -1,5 +1,10 @@
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-                 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<!DOCTYPE refentry [
+   <!ENTITY % myent SYSTEM "sanewall.ent">
+   %myent;
+   <!ENTITY % DocBookDTD PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+   %DocBookDTD;
+               ]>
 <!-- For license information see sanewall-manual-info.xml.in -->
 <refentry id="sanewall-variables">
 
@@ -433,25 +438,49 @@ SANEWALL_ROUTING="1"
     <varlistentry><term><envar>SANEWALL_AUTOSAVE</envar></term>
       <listitem>
         <para>
-          This variable specifies the file that will be created when
-          <xref linkend="sanewall"/> is called with the <option>save</option>
-          argument. It may be set as an environment variable.
+          This variable specifies the file of (IPv4) rules that will be
+          created when <xref linkend="sanewall"/> is called with
+          the <option>save</option> argument. It may be set as an
+          environment variable.
         </para>
         <para>
-          If the variable is empty, <application>Sanewall</application>
-          will try to detect where to save the file. Currently
-          <filename>/etc/sysconfig/iptables</filename> (RedHat) and
-          <filename>/var/lib/iptables/autosave</filename> (Debian) are tried
-          in order, based on the existence of the directory.
+          If the variable is not set, a system-specific value is used
+          which was defined at configure-time. If no value was chosen then
+          the save fails.
         </para>
         <para>
           Default:
           <programlisting>
-SANEWALL_AUTOSAVE=""
+SANEWALL_AUTOSAVE="&SANEWALL_AUTOSAVE;"
           </programlisting>
           Example:
           <programlisting>
-SANEWALL_AUTOSAVE="/tmp/sanewall-saved.txt"
+SANEWALL_AUTOSAVE="/tmp/sanewall-saved-ipv4.txt"
+          </programlisting>
+        </para>
+      </listitem>
+    </varlistentry>
+    <varlistentry><term><envar>SANEWALL_AUTOSAVE6</envar></term>
+      <listitem>
+        <para>
+          This variable specifies the file of (IPv6) rules that will be
+          created when <xref linkend="sanewall"/> is called with
+          the <option>save</option> argument. It may be set as an
+          environment variable.
+        </para>
+        <para>
+          If the variable is not set, a system-specific value is used
+          which was defined at configure-time. If no value was chosen then
+          the save fails.
+        </para>
+        <para>
+          Default:
+          <programlisting>
+SANEWALL_AUTOSAVE6="&SANEWALL_AUTOSAVE6;"
+          </programlisting>
+          Example:
+          <programlisting>
+SANEWALL_AUTOSAVE6="/tmp/sanewall-saved-ipv6.txt"
           </programlisting>
         </para>
       </listitem>

@@ -807,9 +807,12 @@ test -z "$SANEWALL_ROUTING" && \
 	SANEWALL_ROUTING=0
 
 # Where /etc/init.d/iptables expects its configuration?
-# Leave it empty for automatic detection
 test -z "$SANEWALL_AUTOSAVE" && \
-	SANEWALL_AUTOSAVE=
+	set_or_def -n SANEWALL_AUTOSAVE "@SANEWALL_AUTOSAVE@" ""
+
+# Where /etc/init.d/iptables6 expects its configuration?
+test -z "$SANEWALL_AUTOSAVE6" && \
+	set_or_def -n SANEWALL_AUTOSAVE6 "@SANEWALL_AUTOSAVE6@" ""
 
 # Set to non-empty to wait (max 60 seconds) for a network interface
 test -z "$WAIT_FOR_IFACE" && \
@@ -7654,50 +7657,73 @@ fi
 
 if [ ${SANEWALL_SAVE} -eq 1 ]
 then
-	if [ -z "${SANEWALL_AUTOSAVE}" ]
+	save_status=0
+
+	if [ "$IPVER" = "ipv4" -o  "$IPVER" = "both" ]
 	then
-		if [ -d "/etc/sysconfig" ]
+		if [ -z "${SANEWALL_AUTOSAVE}" ]
 		then
-			# RedHat
-			SANEWALL_AUTOSAVE="/etc/sysconfig/iptables"
-		elif [ -d "/var/lib/iptables" ]
-		then
-			if [ -f /etc/conf.d/iptables ]
-			then
-				# Gentoo
-				IPTABLES_SAVE=
-
-				. /etc/conf.d/iptables
-				SANEWALL_AUTOSAVE="${IPTABLES_SAVE}"
-			fi
-
-			if [ -z "${SANEWALL_AUTOSAVE}" ]
-			then
-				# Debian
-				SANEWALL_AUTOSAVE="/var/lib/iptables/autosave"
-			fi
-		else
-			error "Cannot find where to save iptables file. Please set SANEWALL_AUTOSAVE."
+			error "No default location to save iptables file. Please set SANEWALL_AUTOSAVE."
 			echo
-			exit 1
+			save_status=1
 		fi
 	fi
 
-	echo -n $"Sanewall: Saving firewall to ${SANEWALL_AUTOSAVE}:"
-
-	fixed_iptables_save >"${SANEWALL_AUTOSAVE}"
-
-	if [ ! $? -eq 0 ]
+	if [ "$IPVER" = "ipv6" -o  "$IPVER" = "both" ]
 	then
-		syslog err "Failed to save new firewall to '${SANEWALL_AUTOSAVE}'."
-		failure $"Sanewall: Saving firewall to ${SANEWALL_AUTOSAVE}:"
-		echo
-		exit 1
+		if [ -z "${SANEWALL_AUTOSAVE6}" ]
+		then
+			error "No default location to save ip6tables file. Please set SANEWALL_AUTOSAVE6."
+			echo
+			save_status=1
+		fi
 	fi
 
-	syslog info "New firewall saved to '${SANEWALL_AUTOSAVE}'."
-	success $"Sanewall: Saving firewall to ${SANEWALL_AUTOSAVE}:"
-	echo
+	if [ $save_status -ne 0 ]
+	then
+		exit $save_status
+	fi
+
+	if [ "$IPVER" = "ipv4" -o  "$IPVER" = "both" ]
+	then
+		echo -n $"Sanewall: Saving ipv4 firewall to ${SANEWALL_AUTOSAVE}:"
+		IPVER=ipv4 fixed_iptables_save >"${SANEWALL_AUTOSAVE}"
+
+		if [ ! $? -eq 0 ]
+		then
+			syslog err "Failed to save new ipv4 firewall to '${SANEWALL_AUTOSAVE}'."
+			failure $"Sanewall: Saving ipv4 firewall to ${SANEWALL_AUTOSAVE}:"
+			echo
+			save_status=1
+		fi
+
+		syslog info "New ipv4 firewall saved to '${SANEWALL_AUTOSAVE}'."
+		success $"Sanewall: Saving ipv4 firewall to ${SANEWALL_AUTOSAVE}:"
+		echo
+	fi
+
+	if [ "$IPVER" = "ipv6" -o  "$IPVER" = "both" ]
+	then
+		echo -n $"Sanewall: Saving ipv6 firewall to ${SANEWALL_AUTOSAVE6}:"
+		IPVER=ipv6 fixed_iptables_save >"${SANEWALL_AUTOSAVE6}"
+
+		if [ ! $? -eq 0 ]
+		then
+			syslog err "Failed to save new ipv6 firewall to '${SANEWALL_AUTOSAVE6}'."
+			failure $"Sanewall: Saving ipv6 firewall to ${SANEWALL_AUTOSAVE6}:"
+			echo
+			save_status=1
+		fi
+
+		syslog info "New ipv6 firewall saved to '${SANEWALL_AUTOSAVE6}'."
+		success $"Sanewall: Saving ipv6 firewall to ${SANEWALL_AUTOSAVE6}:"
+		echo
+	fi
+
+	if [ $save_status -ne 0 ]
+	then
+		exit $save_status
+	fi
 
 	# Save the list of modules we need to run to restore the firewall.
 	if [ -f "${SANEWALL_SPOOL_DIR}/last_save_modules.sh" ]

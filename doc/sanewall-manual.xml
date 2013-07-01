@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-                 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<!DOCTYPE book [
+   <!ENTITY % myent SYSTEM "sanewall.ent">
+   %myent;
+   <!ENTITY % DocBookDTD PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+   %DocBookDTD;
+               ]>
 <!-- For license information see sanewall-manual-info.xml.in -->
 <book>
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-                  href="sanewall-manual-info.xml" />
+  <bookinfo>
+    <title>Sanewall Manual</title>
+    <subtitle>Making sense of firewalling using Sanewall</subtitle>
+    <productname>Sanewall</productname>
+    <corpauthor>Sanewall Team</corpauthor>
+    <date>Built &PACKAGE_BUILT_DATE;</date>
+    <releaseinfo>&PACKAGE_VERSION;</releaseinfo>
+    <copyright>
+      <year>2012</year>
+      <year>2013</year>
+      <holder>Phil Whineray &lt;phil@sanewall.org&gt;</holder>
+    </copyright>
+  </bookinfo>
+
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
                   href="chapter-intro.xml" />
 <!--
