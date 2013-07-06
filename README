@@ -48,7 +48,7 @@ to the mailing list or bug tracker.
 2. There is no Linux kernel NAT support for IPv6, you will get errors
    if you try to use it.
 
-   The masquerade command automatically defaults to ipv4 only.
+   The masquerade command automatically defaults to  only.
 
 3. No way to successfully mark a whole interface or router as ipv4/ipv6 only
 
@@ -62,7 +62,6 @@ to the mailing list or bug tracker.
 6. The following commands have not received any significant attention
    so may not work as expected:
 	panic
-	save
 	explain
 	helpme/wizard
 
@@ -113,7 +112,7 @@ out but not in. To get something more complete you have three choices:
      and renaming any FIREHOL_ variables to SANEWALL_ instead.
 
      Rename the files (if you have them, they are optional):
-        RESERVED_IPS   ->   RESERVED_IPV4s
+        RESERVED_IPS   ->   RESERVED_IPV4
         PRIVATE_IPS    ->   PRIVATE_IPV4
         MULTICAST_IPS  ->   MULTICAST_IPV4
 
@@ -122,6 +121,15 @@ out but not in. To get something more complete you have three choices:
 
      If you have any custom services in /etc/firehol/services then you
      will need to update those, too.
+
+     If you made use of "firehol save" you need to verify that the
+     SANEWALL_AUTOSAVE and SANEWALL_AUTOSAVE6 variables are correctly
+     specified.
+
+     If you made use of "firehol condrestart" you should be aware that
+     sanewall implements the behaviour documented here:
+       http://fedoraproject.org/wiki/Packaging:SysVInitScript#Required_Actions
+     whereas firehol started only if it was not already running.
 
   2. Start from an example configuration:
        client-all.conf

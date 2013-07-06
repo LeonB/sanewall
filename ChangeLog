@@ -1,3 +1,24 @@
+sanewall (1.1.4) unstable; urgency=low
+
+  * "sanewall save" now creates two files
+    - Uses SANEWALL_AUTOSAVE (IPv4) and SANEWALL_AUTOSAVE6 (IPv6)
+    - Files are detected at configure time rather than run-time
+      (--with-autosave=PATH and --with-autosave6=PATH)
+    - Closes http://bugs.sanewall.org/sanewall/issues/84
+
+  * "sanewall status" now identifies which blocks are IPv6 or IPv4
+    - Closes http://bugs.sanewall.org/sanewall/issues/82
+
+  * "sanewall condrestart" now follows official conventions
+    - Restart only if already running
+    - Closes http://bugs.sanewall.org/sanewall/issues/81
+
+  * Move command detection to configure-time rather than runtime
+    - Remove wget_cmd which was only used by the ECN shame helper and
+      which is no longer available
+
+ -- Phil Whineray <phil@sanewall.org>  Thu,  6 Jul 2013 09:51:00 +0100
+
 sanewall (1.1.3) unstable; urgency=low
 
   * Prevent VLAN interfaces interfering with IPv4/IPv6 detection

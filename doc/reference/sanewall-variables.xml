@@ -1,5 +1,5 @@
 <!DOCTYPE refentry [
-   <!ENTITY % myent SYSTEM "sanewall.ent">
+   <!ENTITY % myent SYSTEM "../sanewall.ent">
    %myent;
    <!ENTITY % DocBookDTD PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">

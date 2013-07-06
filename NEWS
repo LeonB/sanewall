@@ -1,3 +1,36 @@
+2013/07/06:
+
+Release of version 1.1.4
+
+"sanewall save" now creates two files using SANEWALL_AUTOSAVE (IPv4)
+and SANEWALL_AUTOSAVE6 (IPv6).
+
+The default values for these variables are now detected at configure
+time rather than run-time. Most command detection is now also at
+configure-time rather than runtime.
+
+The autodetection should work on most common platforms provided the
+appropriate packages making use of the saved rules are installed (e.g.
+iptables-persistent on Debian).
+
+Maintainers in particular may prefer to set the values explicitly:
+  --with-autosave=PATH
+  --with-autosave6=PATH
+
+If the documentation is being rebuilt using --enable-maintainer-mode
+it will be updated to reflect the default path.
+
+If no default is found or the --without-zzz form is configured, the user
+will have to declare the variables themselves to make use of the save
+function.
+
+"sanewall status" now identifies which blocks are IPv6 or IPv4.
+
+"sanewall condrestart" now follows conventions, i.e. restarting the
+firewall if it appears to already be running, rather than the old
+behaviour (starting it only if not run before).
+
+
 2013/05/12:
 
 Release of version 1.1.3
